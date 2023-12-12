@@ -222,7 +222,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         #    tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         #    logger.info("  %s = %s", key, round(value,4))
                         #output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(results['perplexity'],4)))
-                        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=100)
+                        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
                         logger.info(f"dev bleu: {dev_bleu}, dev EM: {dev_EM}")
                         output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu,2)))
                         if dev_bleu > best_bleu:
