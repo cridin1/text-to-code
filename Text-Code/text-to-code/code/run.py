@@ -211,7 +211,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                     logging_loss = tr_loss
                     tr_nb=global_step
 
-                if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
+                if args.local_rank in [-1, 0] and args.save_steps > 0 and (global_step % args.save_steps == 0 or global_step == :
                     checkpoint_prefix = "checkpoint"
                     # Save model checkpoint
                     if args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
@@ -269,6 +269,27 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                 break
         if args.max_steps > 0 and global_step > args.max_steps:
             break
+
+    # Saving last model if training terminates
+    model_to_save = (
+                        model.module if hasattr(model, "module") else model
+                    ) 
+    last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
+    if not os.path.exists(last_output_dir):
+        os.makedirs(last_output_dir)
+    model_to_save.save_pretrained(last_output_dir)
+    tokenizer.save_pretrained(last_output_dir)
+    idx_file = os.path.join(last_output_dir, 'idx_file.txt')
+    with open(idx_file, 'w', encoding='utf-8') as idxf:
+        idxf.write(str(0) + '\n')
+
+    torch.save(optimizer.state_dict(), os.path.join(last_output_dir, "optimizer.pt"))
+    torch.save(scheduler.state_dict(), os.path.join(last_output_dir, "scheduler.pt"))
+    logger.info("Saving optimizer and scheduler states to %s", last_output_dir)
+
+    step_file = os.path.join(last_output_dir, 'step_file.txt')
+    with open(step_file, 'w', encoding='utf-8') as stepf:
+        stepf.write(str(global_step) + '\n')
 
     if args.local_rank in [-1, 0]:
         tb_writer.close()
