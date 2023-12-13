@@ -167,9 +167,12 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     # model.resize_token_embeddings(len(tokenizer))
     model.zero_grad()
     set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
- 
+    
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         for step, batch in enumerate(train_dataloader):
+            if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
+                continue
+            
             inputs, labels = (batch, batch)
             inputs = inputs.to(args.device)
             labels = labels.to(args.device)
@@ -241,7 +244,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                     tokenizer.save_pretrained(last_output_dir)
                     idx_file = os.path.join(last_output_dir, 'idx_file.txt')
                     with open(idx_file, 'w', encoding='utf-8') as idxf:
-                        idxf.write(str(0) + '\n')
+                        idxf.write(str(idx) + '\n')
 
                     torch.save(optimizer.state_dict(), os.path.join(last_output_dir, "optimizer.pt"))
                     # torch.save(scheduler.state_dict(), os.path.join(last_output_dir, "scheduler.pt"))
@@ -256,7 +259,28 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                 break
         if args.max_steps > 0 and global_step > args.max_steps:
             break
+    
+    last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
+    if not os.path.exists(last_output_dir):
+        os.makedirs(last_output_dir)
+    if args.model_type == "rnn":
+        torch.save(model_to_save.state_dict(), os.path.join(last_output_dir, "model.pt"))
+    else:
+        model_to_save.save_pretrained(last_output_dir)
+    tokenizer.save_pretrained(last_output_dir)
+    idx_file = os.path.join(last_output_dir, 'idx_file.txt')
+    with open(idx_file, 'w', encoding='utf-8') as idxf:
+        idxf.write(str(idx) + '\n')
 
+    torch.save(optimizer.state_dict(), os.path.join(last_output_dir, "optimizer.pt"))
+    # torch.save(scheduler.state_dict(), os.path.join(last_output_dir, "scheduler.pt"))
+    logger.info("Saving optimizer and scheduler states to %s", last_output_dir)
+
+    step_file = os.path.join(last_output_dir, 'step_file.txt')
+    with open(step_file, 'w', encoding='utf-8') as stepf:
+        stepf.write(str(global_step) + '\n')
+    
+    
     return global_step, tr_loss / global_step
 
 
@@ -650,7 +674,7 @@ def main():
         args.config_name = os.path.join(checkpoint_last, 'config.json')
         idx_file = os.path.join(checkpoint_last, 'idx_file.txt')
         with open(idx_file, encoding='utf-8') as idxf:
-            args.start_epoch = int(idxf.readlines()[0].strip()) + 1
+            args.start_epoch = int(idxf.readlines()[0].strip())
 
         step_file = os.path.join(checkpoint_last, 'step_file.txt')
         if os.path.exists(step_file):
