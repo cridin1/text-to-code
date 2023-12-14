@@ -284,7 +284,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     tokenizer.save_pretrained(last_output_dir)
     idx_file = os.path.join(last_output_dir, 'idx_file.txt')
     with open(idx_file, 'w', encoding='utf-8') as idxf:
-        idxf.write(str(idx) + '\n')
+        idxf.write(str(idx) + '\n') #if the run.py arrives here, then it has completed the training, 
 
     torch.save(optimizer.state_dict(), os.path.join(last_output_dir, "optimizer.pt"))
     # torch.save(scheduler.state_dict(), os.path.join(last_output_dir, "scheduler.pt"))
@@ -676,7 +676,7 @@ def main():
         args.config_name = os.path.join(checkpoint_last, 'config.json')
         idx_file = os.path.join(checkpoint_last, 'idx_file.txt')
         with open(idx_file, encoding='utf-8') as idxf:
-            args.start_epoch = int(idxf.readlines()[0].strip()) + 1
+            args.start_epoch = int(idxf.readlines()[0].strip())
 
         step_file = os.path.join(checkpoint_last, 'step_file.txt')
         if os.path.exists(step_file):
