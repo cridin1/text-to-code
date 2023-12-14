@@ -43,6 +43,12 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
 from model import RNNModel
 
+try:
+    from torch.utils.tensorboard import SummaryWriter
+except:
+    from tensorboardX import SummaryWriter
+
+
 logger = logging.getLogger(__name__)
 
 MODEL_CLASSES = {
