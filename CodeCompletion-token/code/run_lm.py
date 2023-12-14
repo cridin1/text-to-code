@@ -101,7 +101,9 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
             os.makedirs(args.tensorboard_dir)
     
     args.batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
-    train_sampler = RandomSampler(train_dataset)
+
+    #avoid random sampling ?
+    #train_sampler = RandomSampler(train_dataset)
     
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, drop_last=True)
     total_examples = len(train_dataset) * (
@@ -260,7 +262,10 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
         if args.max_steps > 0 and global_step > args.max_steps:
             break
     
-    last_output_dir = os.path.join(args.output_dir, 'checkpoint-last')
+    model_to_save = (
+                        model.module if hasattr(model, "module") else model
+                    )  
+    last_output_dir = os.path.join(args.output_dir, 'checkpoint-'+str(global_step))
     if not os.path.exists(last_output_dir):
         os.makedirs(last_output_dir)
     if args.model_type == "rnn":
