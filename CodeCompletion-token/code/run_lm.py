@@ -32,7 +32,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset, SequentialSampler, RandomSampler,TensorDataset
 from torch.utils.data.distributed import DistributedSampler
-from dataset import TextDataset, finetuneDataset, EvalDataset, lineDataset, CodeSearchNetDataset
+from dataset import TextDataset, finetuneDataset, EvalDataset, lineDataset
 from beam import Beam
 
 from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
