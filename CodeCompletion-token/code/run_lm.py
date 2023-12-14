@@ -94,7 +94,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     args.batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
 
     #avoid random sampling ?
-    #train_sampler = RandomSampler(train_dataset)
+    train_sampler = RandomSampler(train_dataset)
     
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size, drop_last=True)
     total_examples = len(train_dataset) * (
