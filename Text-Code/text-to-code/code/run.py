@@ -539,7 +539,6 @@ def main():
                         help="num of gpus per node")  
     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
-
     parser.add_argument('--log_file', type=str, default='')
     parser.add_argument('--tensorboard_dir', type=str)  
     
@@ -656,7 +655,7 @@ def main():
         api.create_repo(model.config._name_or_path, private=True)
         api.upload_folder(
             folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
-            repo_id=model.config._name_or_path,
+            repo_id=f"{model.config._name_or_path}-{str(int(args.num_train_epochs))}-powershell",
             repo_type="model",
         )
 
