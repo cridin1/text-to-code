@@ -35,6 +35,7 @@ from torch.utils.data import DataLoader, Dataset, SequentialSampler, RandomSampl
 from torch.utils.data.distributed import DistributedSampler
 from dataset import concodeDataset
 from beam import Beam
+from huggingface_hub import HfApi
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -648,6 +649,16 @@ def main():
 
         global_step, tr_loss = train(args, train_dataset, model, tokenizer, fh, pool)
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+
+        logger.info("Pushing the model on hf, requires token as env var")
+
+        api = HfApi()
+        api.create_repo(model.config._name_or_path, private=True)
+        api.upload_folder(
+            folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
+            repo_id=model.config._name_or_path,
+            repo_type="model",
+        )
 
     if args.do_eval:            # only works on 1 GPU
         dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
