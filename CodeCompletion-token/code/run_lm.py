@@ -40,8 +40,7 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
                           OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
                           RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
-                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer,
-                          CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
+                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer
 from model import RNNModel
 
 try:
