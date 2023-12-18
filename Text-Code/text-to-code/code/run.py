@@ -650,7 +650,9 @@ def main():
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
         logger.info("Pushing the model on hf, requires token as env var")
+        
 
+        ##add token here
         output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
         api = HfApi()
 
