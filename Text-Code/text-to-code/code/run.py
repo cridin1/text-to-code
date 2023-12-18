@@ -653,7 +653,9 @@ def main():
 
         output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
         api = HfApi()
-        api.create_repo(output_path, private=True)
+
+        if not(api.repo_exists(output_path)):
+            api.create_repo(output_path, private=True)
         api.upload_folder(
             folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
             repo_id=output_path,
