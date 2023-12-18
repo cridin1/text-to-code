@@ -652,10 +652,10 @@ def main():
         logger.info("Pushing the model on hf, requires token as env var")
 
         api = HfApi()
-        api.create_repo(model.config._name_or_path, private=True)
+        api.create_repo(f"cridin1/{model.config._name_or_path.split("/")[-1]}-{str(int(args.num_train_epochs))}-powershell", private=True)
         api.upload_folder(
             folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
-            repo_id=f"{model.config._name_or_path}-{str(int(args.num_train_epochs))}-powershell",
+            repo_id=f"cridin1/{model.config._name_or_path.split("/")[-1]}-{str(int(args.num_train_epochs))}-powershell",
             repo_type="model",
         )
 
