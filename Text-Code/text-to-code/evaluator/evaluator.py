@@ -34,15 +34,9 @@ def rouge(hyps, refs):
 	f1_scores = (scores["rouge-1"]["f"], scores["rouge-2"]["f"], scores["rouge-3"]["f"], scores["rouge-4"]["f"], scores["rouge-l"]["f"])
 	return f1_scores
 
-
-def main():
-    parser = argparse.ArgumentParser(description='Evaluate leaderboard predictions for code completion (line level).')
-    parser.add_argument('--answers', '-a', required=True, help="filename of the labels, in json format.")
-    parser.add_argument('--predictions', '-p', required=True, help="filename of the leaderboard predictions, in txt format.")
-    args = parser.parse_args()
-
-    preds = [elem.strip() for elem in open(args.predictions, "r").readlines()]
-    gts = [elem.strip() for elem in open(args.answers, "r").readlines()]
+def evaluate_metrics(predictions, answers):
+    preds = [elem.strip() for elem in open(predictions, "r").readlines()]
+    gts = [elem.strip() for elem in open(answers, "r").readlines()]
 
     assert len(preds) == len(gts), f"Samples of predictions and answers are not equal, {len(preds)}: {len(gts)}"
 
@@ -52,11 +46,13 @@ def main():
         if pred.split() == gt.split():
             EM += 1
 
+    bleus = []
     for i in range(1,5):
-        bleu_score = round(_bleu(args.answers, args.predictions, max_order = i), 2)
-        logger.info(f"BLEU-{i}: {bleu_score}")
+        bleu_score = round(_bleu(answers, predictions, max_order = i), 2)
+        bleus.append(bleu_score)
+        print(f"BLEU-{i}: {bleu_score}")
         
-    logger.info(f"EM: {round(EM/total*100, 2)}")
+    print(f"EM: {round(EM/total*100, 2)}")
 
     list_gold = gts
     list_answer = preds
@@ -71,6 +67,22 @@ def main():
     metrics = ["ROUGE-1","ROUGE-2","ROUGE-3","ROUGE-4","ROUGE-L"]
     for i, metric in enumerate(metrics):
         print(metric+':{0:.2f}\n'.format(overall_Rouge[i] * 100))
+        overall_Rouge[i] = round(overall_Rouge[i]*100,2)
+
+    EM = round(EM/total*100, 2)
+    ROUGEL = overall_Rouge[-1]
+    BLEU4 = bleus[-1]
+    METEOR = round(overall_Meteor,2)
+    ED = round(overall_ED,2)
+
+    return EM, BLEU4, ED, METEOR, ROUGEL
+
+def main():
+    parser = argparse.ArgumentParser(description='Evaluate leaderboard predictions for code completion (line level).')
+    parser.add_argument('--answers', '-a', required=True, help="filename of the labels, in json format.")
+    parser.add_argument('--predictions', '-p', required=True, help="filename of the leaderboard predictions, in txt format.")
+    args = parser.parse_args()
+    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(args.predictions, args.answers)
     
 
 if __name__ == "__main__":
