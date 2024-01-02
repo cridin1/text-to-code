@@ -53,6 +53,10 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer,
                           CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 
+ import sys
+ sys.path.insert(1, './evaluator')
+
+
 logger = logging.getLogger(__name__)
 
 MODEL_CLASSES = {
