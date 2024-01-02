@@ -216,7 +216,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                     logging_loss = tr_loss
                     tr_nb=global_step
 
-                if args.local_rank in [-1, 0] and args.save_steps > 0 and (global_step % args.save_steps == 0 or global_step in [t_total, t_total-1]):
+                if args.local_rank in [-1, 0] and args.save_steps > 0 and (global_step % args.save_steps == 0 or global_step in [t_total]):
                     checkpoint_prefix = "checkpoint"
                     # Save model checkpoint
                     if args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
