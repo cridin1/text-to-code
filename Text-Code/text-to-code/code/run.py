@@ -285,6 +285,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
 
 def evaluate(args, model, tokenizer, prefix="", eval_when_training=False):
     # Loop to handle MNLI double evaluation (matched, mis-matched)
+    model.to(args.device)
     eval_output_dir = args.output_dir
 
     eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
