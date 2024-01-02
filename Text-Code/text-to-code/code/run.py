@@ -433,9 +433,8 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
             f.write(pred+'\n')
             f1.write(gold+'\n')   
             EM.append(pred.split() == gold.split())
-    
-    if file_type == "test":
-        return 0, 0
+    f.close()
+    f1.close()
 
     bleu_score = round(_bleu(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output")), 2)
     EM = round(np.mean(EM) * 100, 2)
