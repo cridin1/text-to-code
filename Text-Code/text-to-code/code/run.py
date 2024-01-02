@@ -54,8 +54,8 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 
 import sys
-sys.path.insert(1, './evaluator')
-from evaluator import evaluate_metrics
+sys.path.append(os.path.join(os.getcwd(), 'Text-Code/text-to-code/evaluator'))
+import evaluator
 
 logger = logging.getLogger(__name__)
 
