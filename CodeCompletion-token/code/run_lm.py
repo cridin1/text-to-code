@@ -48,7 +48,8 @@ try:
 except:
     from tensorboardX import SummaryWriter
 
-
+logging.basicConfig(level=logging.INFO,
+                    format=' %(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 MODEL_CLASSES = {
@@ -57,7 +58,8 @@ MODEL_CLASSES = {
     'openai-gpt': (OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
     'bert': (BertConfig, BertForMaskedLM, BertTokenizer),
     'roberta': (RobertaConfig, RobertaForMaskedLM, RobertaTokenizer),
-    'distilbert': (DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
+    'distilbert': (DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer),
+    'codegen': (CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 }
 
 
@@ -219,7 +221,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                     tr_nb=global_step
 
                 if (args.local_rank in [-1, 0] and args.save_steps > 0 and 
-                    (global_step % args.save_steps == 0 or global_step in [t_total, t_total-1])):
+                    (global_step % args.save_steps == 0 or global_step in [t_total])):
                     checkpoint_prefix = "checkpoint"
                     # Save model checkpoint
                     if args.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
@@ -586,7 +588,9 @@ def main():
                         help="do not load optimizer (if it exists from the pre-trained ckpt) | this arg doesn't matter if it doesn't exist ")
     parser.add_argument('--use_NL_too', action='store_true',
                         help="codeGPT pre-training ignored NL part, with this arg we will include NL part (docstring) in our pretraining along with concode_field_sep (added as a special token) between NL and PL")
-    
+    parser.add_argument("--hf_token", default="", type=str,
+                        help="The write token for pushing the model on hf")
+     
     
     pool = None
     args = parser.parse_args()
@@ -633,7 +637,6 @@ def main():
                    args.local_rank, device, args.n_gpu, bool(args.local_rank != -1), args.fp16,
                    torch.distributed.get_world_size() if args.local_rank != -1 else 1)
 
-    # 使用FileHandler输出到文件
     fh = logging.FileHandler(args.log_file)
     logger.addHandler(fh)
 
@@ -711,6 +714,20 @@ def main():
 
         global_step, tr_loss = train(args, train_dataset, model, tokenizer, fh, pool)
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+
+        if(args.hf_token != ""):
+            os.environ['HF_TOKEN']= hf_token
+            output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
+            api = HfApi()
+
+            if not(api.repo_exists(output_path)):
+                api.create_repo(output_path, private=True)
+
+            api.upload_folder(
+                folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
+                repo_id=output_path,
+                repo_type="model",
+            )
 
     # Only works on single GPU
     if args.do_eval:

@@ -55,6 +55,8 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
 
 from evaluator import evaluate_metrics
 
+logging.basicConfig(level=logging.INFO,
+                    format=' %(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 MODEL_CLASSES = {
