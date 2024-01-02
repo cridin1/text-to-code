@@ -40,8 +40,10 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
                           OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
                           RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
-                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer
+                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer,
+                          CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 from model import RNNModel
+from huggingface_hub import HfApi
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -716,7 +718,7 @@ def main():
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
         if(args.hf_token != ""):
-            os.environ['HF_TOKEN']= hf_token
+            os.environ['HF_TOKEN']= args.hf_token
             output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
             api = HfApi()
 
