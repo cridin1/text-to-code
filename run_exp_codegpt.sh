@@ -1,6 +1,5 @@
 #!/bin/bash
 
-PWD=./text-to-code
 LANG="powershell"
 DATADIR="/content/drive/MyDrive/tesi_magistrale/dataset/json"
 OUTPUTDIR="/content/model"
@@ -14,7 +13,7 @@ SAVE_STEPS=$(($STEPS / 5))
 
 echo $STEPS $SAVE_STEPS $BATCH_SIZE
 
-python $PWD/Text-Code/text-to-code/code/run_fake.py \
+python $PWD/Text-Code/text-to-code/code/run.py \
         --data_dir=$DATADIR \
         --langs=$LANG \
         --output_dir=$OUTPUTDIR \
