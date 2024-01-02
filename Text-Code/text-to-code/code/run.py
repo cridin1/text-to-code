@@ -541,6 +541,8 @@ def main():
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
     parser.add_argument('--log_file', type=str, default='')
     parser.add_argument('--tensorboard_dir', type=str)  
+    parser.add_argument("--hf_token", default="", type=str,
+                        help="The write token for pushing the model on hf")
     
     pool = None
     args = parser.parse_args()
@@ -651,18 +653,19 @@ def main():
 
         logger.info("Pushing the model on hf, requires token as env var")
         
+        if(args.hf_token != ""):
+            os.environ['HF_TOKEN']= hf_token
+            output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
+            api = HfApi()
 
-        ##add token here
-        output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
-        api = HfApi()
+            if not(api.repo_exists(output_path)):
+                api.create_repo(output_path, private=True)
 
-        if not(api.repo_exists(output_path)):
-            api.create_repo(output_path, private=True)
-        api.upload_folder(
-            folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
-            repo_id=output_path,
-            repo_type="model",
-        )
+            api.upload_folder(
+                folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
+                repo_id=output_path,
+                repo_type="model",
+            )
 
     if args.do_eval:            # only works on 1 GPU
         dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
