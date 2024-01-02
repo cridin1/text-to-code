@@ -53,8 +53,6 @@ from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup,
                           DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer,
                           CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 
-import sys
-sys.path.append(os.path.join(os.getcwd(), 'Text-Code/text-to-code/evaluator'))
 from evaluator import evaluate_metrics
 
 logger = logging.getLogger(__name__)
