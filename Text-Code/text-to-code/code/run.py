@@ -229,8 +229,8 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         #    tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         #    logger.info("  %s = %s", key, round(value,4))
                         #output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(results['perplexity'],4)))
+                        logger.info(f"\n ==iteration: {global_step}/{t_total}")
                         dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
-                        logger.info(f"dev bleu: {dev_bleu}, dev EM: {dev_EM}")
                         output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu,2)))
                         if dev_bleu > best_bleu:
                             best_bleu = dev_bleu
@@ -440,7 +440,8 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
 
 
 
-    EM, BLEU4, ED, METEOR, ROUGEL= evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output"))
+    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output"))
+    logger.info(f"EM: {EM}, BLEU4: {BLEU4}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} ==\n")
     return BLEU4, EM
 
 

@@ -66,7 +66,7 @@ def evaluate_metrics(predictions, answers):
     print('METEOR:{0:.2f}\n'.format(overall_Meteor * 100))
     metrics = ["ROUGE-1","ROUGE-2","ROUGE-3","ROUGE-4","ROUGE-L"]
     for i, metric in enumerate(metrics):
-        print(metric+':{0:.2f}\n'.format(overall_Rouge[i] * 100))
+        print(metric+':{0:.2f}'.format(overall_Rouge[i] * 100))
         overall_Rouge[i] = round(overall_Rouge[i]*100,2)
 
     EM = round(EM/total*100, 2)
