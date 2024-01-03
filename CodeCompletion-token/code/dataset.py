@@ -131,7 +131,8 @@ class finetuneDataset(Dataset):
                 else:
                     x = "<s> " + x + " </s>"
                 try:
-                    self.inputs.append(tokenizer.encode(x))
+                    ertoken = tokenizer.encode(x, padding = "max_length", max_length = args.block_size, truncation = True)
+                    self.inputs.append(ertoken)
                 except Exception:
                     pass
                 if idx % (length//10) == 0:

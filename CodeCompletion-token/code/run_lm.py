@@ -185,9 +185,12 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
             
             inputs, labels = (batch, batch)
             inputs = inputs.to(args.device)
+
+            attn_mask = (inputs.clone().detach() != tokenizer.pad_token_id).int().to(dtype=torch.uint8, device=args.device)
+
             labels = labels.to(args.device)
             model.train()
-            outputs = model(inputs, labels=labels)
+            outputs = model(inputs, labels=labels, attention_mask=attn_mask)
             loss = outputs[0]
 
             if args.n_gpu > 1:
