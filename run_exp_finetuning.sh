@@ -1,13 +1,13 @@
 #!/bin/bash
 
 LANG="powershell"
-DATADIR="/content/drive/MyDrive/tesi_magistrale/dataset/json"
+DATADIR=$1
 OUTPUTDIR="/content/model"
-PRETRAINDIR="microsoft/CodeGPT-small-py"  # will download pre-trained CodeGPT model
+PRETRAINDIR=$2  # will download pre-trained CodeGPT model
 LOGFILE="text2code.log"
-NUM_EPOCHS=1
+NUM_EPOCHS=$3
 NUM_TRAIN_SAMPLES=901
-BATCH_SIZE=4
+BATCH_SIZE=2
 STEPS=$(($NUM_EPOCHS * $NUM_TRAIN_SAMPLES / $BATCH_SIZE))
 SAVE_STEPS=$(($STEPS / 5))
 
@@ -26,7 +26,7 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --learning_rate=5e-5 \
         --weight_decay=0.01 \
         --evaluate_during_training \
-        --per_gpu_train_batch_size=1 \
+        --per_gpu_train_batch_size=2 \
         --per_gpu_eval_batch_size=4 \
         --gradient_accumulation_steps=$BATCH_SIZE \
         --num_train_epochs=$NUM_EPOCHS \
