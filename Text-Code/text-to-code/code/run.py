@@ -660,6 +660,7 @@ def main():
         logger.info("Pushing the model on hf, requires token as env var")
         
         if(args.hf_token != ""):
+            shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
             os.environ['HF_TOKEN']= args.hf_token
             output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
             api = HfApi()
