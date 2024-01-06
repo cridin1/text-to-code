@@ -35,8 +35,8 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --save_total_limit=1 \
         --overwrite_output_dir \
         --log_file=$LOGFILE \
-        --seed=42 \ 
-        --hf_token="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" \
+        --seed=42 \
+        --hf_token="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"
 
 
 OUT_DRIVE_DIR="/content/drive/MyDrive/script_tesi_magistrale/finetuning_scripts/CodeGPT/CodeGPT_3epochs_pretrain"
