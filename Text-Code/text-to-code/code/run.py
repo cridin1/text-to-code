@@ -232,7 +232,14 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         #    logger.info("  %s = %s", key, round(value,4))
                         #output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(results['perplexity'],4)))
                         logger.info(f"\n ==iteration: {global_step}/{t_total}")
-                        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
+                        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
+
+                        tb_writer.add_scalar('EM', dev_EM, global_step)
+                        tb_writer.add_scalar('BLEU4', dev_bleu, global_step)
+                        tb_writer.add_scalar('ED', ED, global_step)
+                        tb_writer.add_scalar('METEOR', METEOR, global_step)
+                        tb_writer.add_scalar('ROUGEL', ROUGEL, global_step)
+
                         output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu,2)))
                         if dev_bleu > best_bleu:
                             best_bleu = dev_bleu
@@ -445,7 +452,7 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
 
     EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output"))
     logger.info(f"EM: {EM}, BLEU4: {BLEU4}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} ==\n")
-    return BLEU4, EM
+    return EM, BLEU4, ED, METEOR, ROUGEL
 
 
 
@@ -675,11 +682,11 @@ def main():
             )
 
     if args.do_eval:            # only works on 1 GPU
-        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
+         dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
         logger.info(f"dev bleu: {dev_bleu}, dev EM: {dev_EM}")
 
     if args.do_infer:            # only works on 1 GPU
-        test_bleu, test_EM = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
+        test_EM, test_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
         logger.info(f"test bleu: {test_bleu}, test EM: {test_EM}")
 
 
