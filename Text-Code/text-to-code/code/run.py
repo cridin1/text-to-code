@@ -450,7 +450,7 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
 
 
 
-    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output"))
+    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.output"), os.path.join(args.output_dir, f"{file_type}.gold"))
     logger.info(f"EM: {EM}, BLEU4: {BLEU4}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} ==\n")
     return EM, BLEU4, ED, METEOR, ROUGEL
 
