@@ -240,9 +240,9 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         tb_writer.add_scalar('METEOR', METEOR, global_step)
                         tb_writer.add_scalar('ROUGEL', ROUGEL, global_step)
 
-                        output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu,2)))
-                        if dev_bleu > best_bleu:
-                            best_bleu = dev_bleu
+                        output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu[-1],2)))
+                        if dev_bleu[-1] > best_bleu:
+                            best_bleu = dev_bleu[-1]
                             logger.info(f"best bleu updated. saved in {output_dir}")
                             logger.info(f"best bleu: {best_bleu}")
                     else:
@@ -669,7 +669,8 @@ def main():
         if(args.hf_token != ""):
             shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
             os.environ['HF_TOKEN']= args.hf_token
-            output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell"
+            pretrained = "pretrained" if os.path.split(model.config._name_or_path)[0] == "cridin1" else ""
+            output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell-{pretrained}"
             api = HfApi()
 
             if not(api.repo_exists(output_path)):
@@ -682,12 +683,12 @@ def main():
             )
 
     if args.do_eval:            # only works on 1 GPU
-         dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
-        logger.info(f"dev bleu: {dev_bleu}, dev EM: {dev_EM}")
+        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
+        logger.info(f"dev bleu: {dev_bleu[-1]}, dev EM: {dev_EM}")
 
     if args.do_infer:            # only works on 1 GPU
         test_EM, test_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
-        logger.info(f"test bleu: {test_bleu}, test EM: {test_EM}")
+        logger.info(f"test bleu: {test_bleu[-1]}, test EM: {test_EM}")
 
 
 if __name__ == "__main__":

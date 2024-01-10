@@ -7,7 +7,8 @@ PRETRAINDIR=$2  # will download pre-trained CodeGPT model
 LOGFILE="/content/text2code.log"
 NUM_EPOCHS=$3
 NUM_TRAIN_SAMPLES=901
-BATCH_SIZE=1
+BATCH_SIZE=2
+GRADIENT_STEPS=1
 STEPS=$(($NUM_EPOCHS * $NUM_TRAIN_SAMPLES / $BATCH_SIZE))
 SAVE_STEPS=$(($STEPS / 3))
 OUT_DRIVE_DIR=$4 #.../model
@@ -27,9 +28,9 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --learning_rate=5e-5 \
         --weight_decay=0.01 \
         --evaluate_during_training \
-        --per_gpu_train_batch_size=2 \
+        --per_gpu_train_batch_size=$BATCH_SIZE \
         --per_gpu_eval_batch_size=4 \
-        --gradient_accumulation_steps=$BATCH_SIZE \
+        --gradient_accumulation_steps=$GRADIENT_STEPS \
         --num_train_epochs=$NUM_EPOCHS \
         --logging_steps=10 \
         --save_steps=$SAVE_STEPS \
