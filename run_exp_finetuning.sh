@@ -37,7 +37,7 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --overwrite_output_dir \
         --log_file=$LOGFILE \
         --seed=42 \
-        --hf_token="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"
+        --hf_token=$5
 
 mkdir $OUT_DRIVE_DIR/model
 cp -r /content/model/checkpoint-last $OUT_DRIVE_DIR/model
