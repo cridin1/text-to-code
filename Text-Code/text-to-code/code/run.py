@@ -154,7 +154,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     # Train!
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", total_examples )
-    logger.info("  Num epoch = %d", t_total*batch_size//total_examples)
+    logger.info("  Num epoch = %d", args.num_train_epochs)
     logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
     logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", batch_size)
     logger.info("  Gradient Accumulation steps = %d", args.gradient_accumulation_steps)
@@ -665,10 +665,20 @@ def main():
         global_step, tr_loss = train(args, train_dataset, model, tokenizer, fh, pool)
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
-    logger.info("Pushing the model on hf, requires token as env var")
-    
+    if args.do_eval:            # only works on 1 GPU
+        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
+        logger.info(f"dev bleu: {dev_bleu[-1]}, dev EM: {dev_EM}")
+
+    if args.do_infer:            # only works on 1 GPU
+        test_EM, test_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
+        logger.info(f"test bleu: {test_bleu[-1]}, test EM: {test_EM}")
+
     if(args.hf_token != ""):
-        shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
+        logger.info("Pushing the model on hf, requires token as env var")
+
+        if(not(os.path.exists(os.path.join(args.output_dir, 'checkpoint-last','tensorboard')))):
+            shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
+
         os.environ['HF_TOKEN']= args.hf_token
         pretrained = "-pretrained" if os.path.split(model.config._name_or_path)[0] == "cridin1" else ""
         output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell{pretrained}"
@@ -682,14 +692,6 @@ def main():
             repo_id=output_path,
             repo_type="model",
         )
-
-    if args.do_eval:            # only works on 1 GPU
-        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
-        logger.info(f"dev bleu: {dev_bleu[-1]}, dev EM: {dev_EM}")
-
-    if args.do_infer:            # only works on 1 GPU
-        test_EM, test_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
-        logger.info(f"test bleu: {test_bleu[-1]}, test EM: {test_EM}")
 
 
 if __name__ == "__main__":
