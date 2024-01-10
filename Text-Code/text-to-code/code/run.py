@@ -173,8 +173,9 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
             if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
                 continue
             inputs = batch.to(args.device)
-            attn_mask = torch.tensor(token_labels.clone().detach() != 0, dtype=torch.uint8, device=args.device)
-            loss_mask = torch.tensor(token_labels.clone().detach() == 2, dtype=torch.uint8, device=args.device)
+            attn_mask = (token_labels.clone().detach() != 0).int().to(dtype=torch.uint8, device=args.device)
+            loss_mask = (token_labels.clone().detach() == 2).int().to(dtype=torch.uint8, device=args.device)
+
             model.train()
             # outputs = model(inputs, attention_mask=attn_mask, labels=inputs, loss_mask=loss_mask)
             # loss = outputs[0]
