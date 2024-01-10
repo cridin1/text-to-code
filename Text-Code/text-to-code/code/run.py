@@ -231,11 +231,11 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         #    tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         #    logger.info("  %s = %s", key, round(value,4))
                         #output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(results['perplexity'],4)))
-                        logger.info(f"\n ==iteration: {global_step}/{t_total}")
+                        logger.info(f"\n iteration: {global_step}/{t_total}")
                         dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
 
                         tb_writer.add_scalar('EM', dev_EM, global_step)
-                        tb_writer.add_scalar('BLEU4', dev_bleu, global_step)
+                        tb_writer.add_scalar('BLEU4', dev_bleu[-1], global_step)
                         tb_writer.add_scalar('ED', ED, global_step)
                         tb_writer.add_scalar('METEOR', METEOR, global_step)
                         tb_writer.add_scalar('ROUGEL', ROUGEL, global_step)
@@ -450,9 +450,9 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
 
 
 
-    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.output"), os.path.join(args.output_dir, f"{file_type}.gold"))
-    logger.info(f"EM: {EM}, BLEU4: {BLEU4}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} ==\n")
-    return EM, BLEU4, ED, METEOR, ROUGEL
+    EM, BLEU, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.output"), os.path.join(args.output_dir, f"{file_type}.gold"))
+    logger.info(f"EM: {EM}, BLEU: {BLEU}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} \n")
+    return EM, BLEU, ED, METEOR, ROUGEL
 
 
 
