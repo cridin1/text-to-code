@@ -180,7 +180,8 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
  
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         for step, batch in enumerate(train_dataloader):
-            if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
+            if((args.start_step != 0) or (args.start_epoch != 0)):
+              if(idx == args.start_epoch) and (step <= args.start_step): # if i'm resuming from the start epoch and from global step
                 continue
             
             inputs, labels = (batch, batch)
