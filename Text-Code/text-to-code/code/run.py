@@ -686,7 +686,7 @@ def main():
 
         os.environ['HF_TOKEN']= args.hf_token
         pretrained = "-pretrained" if os.path.split(model.config._name_or_path)[0] == "cridin1" else ""
-        output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell{pretrained}"
+        output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell{pretrained}-last"
         
         logger.info(f"Pushing the model on hf: {output_path}")
 
