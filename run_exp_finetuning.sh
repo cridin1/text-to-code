@@ -27,6 +27,7 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --gpu_per_node 1 \
         --learning_rate=5e-5 \
         --weight_decay=0.01 \
+        --block_size=1024 \
         --evaluate_during_training \
         --per_gpu_train_batch_size=$BATCH_SIZE \
         --per_gpu_eval_batch_size=4 \
