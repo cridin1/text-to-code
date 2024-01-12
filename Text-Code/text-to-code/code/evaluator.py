@@ -72,7 +72,7 @@ def evaluate_metrics(predictions, answers):
     EM = round(EM/total*100, 2)
     ROUGEL = overall_Rouge[-1]
     BLEU = bleus
-    METEOR = round(overall_Meteor,2)
+    METEOR = round(overall_Meteor*100,2) 
     ED = round(overall_ED,2)
 
     return EM, BLEU, ED, METEOR, ROUGEL
