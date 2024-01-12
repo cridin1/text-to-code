@@ -637,14 +637,14 @@ def main():
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     pretrained = args.pretrain_dir
     if pretrained:
-        tokenizer = tokenizer_class.from_pretrained(pretrained, do_lower_case=args.do_lower_case, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>', sep_token='concode_elem_sep')
+        tokenizer = tokenizer_class.from_pretrained(pretrained, do_lower_case=args.do_lower_case, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
         logger.info(tokenizer.encode("<s> hello world <pad> </s>"))
         model = model_class.from_pretrained(pretrained)
         model.resize_token_embeddings(len(tokenizer))
         update_config(model, tokenizer)
         logger.info(model.config)
     else:
-        tokenizer = tokenizer_class.from_pretrained(args.tokenizer_dir, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>', sep_token='concode_elem_sep')
+        tokenizer = tokenizer_class.from_pretrained(args.tokenizer_dir, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
         args.vocab_size = tokenizer.vocab_size
         config = config_class.from_pretrained(args.config_dir)
         model = model_class(config)
