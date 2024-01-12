@@ -13,7 +13,7 @@ from rouge import Rouge
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def edit_distance(hyps,refs):
+def edit_distance(hyps,refs): #hyps -> predizioni machine, refs-> ground truth human
     overall_ED = 0
     num_elem = len(hyps)
     for elem in list(zip(hyps,refs)):
@@ -57,9 +57,9 @@ def evaluate_metrics(predictions, answers):
     list_gold = gts
     list_answer = preds
 
-    overall_ED = edit_distance(list_gold, list_answer)
-    overall_Meteor = meteor(list_gold, list_answer)
-    overall_Rouge = rouge(list_gold, list_answer)
+    overall_ED = edit_distance(list_answer, list_gold)
+    overall_Meteor = meteor(list_answer, list_gold)
+    overall_Rouge = rouge(list_answer, list_gold)
     num_elem = len(list_answer)
 
     print(f"ED: {overall_ED}")
