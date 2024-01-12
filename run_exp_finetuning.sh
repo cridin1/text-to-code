@@ -11,6 +11,7 @@ GRADIENT_STEPS=1
 BATCH_SIZE=$((2 * $GRADIENT_STEPS))
 STEPS=$(($NUM_EPOCHS * $NUM_TRAIN_SAMPLES / $BATCH_SIZE))
 SAVE_STEPS=$(($STEPS / 3))
+LOG_STEPS=$(($STEPS / 8))
 OUT_DRIVE_DIR=$4 #.../model
 
 echo $STEPS $SAVE_STEPS $BATCH_SIZE
@@ -33,7 +34,7 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --per_gpu_eval_batch_size=4 \
         --gradient_accumulation_steps=$GRADIENT_STEPS \
         --num_train_epochs=$NUM_EPOCHS \
-        --logging_steps=10 \
+        --logging_steps=$LOG_STEPS \
         --save_steps=$SAVE_STEPS \
         --save_total_limit=1 \
         --overwrite_output_dir \
