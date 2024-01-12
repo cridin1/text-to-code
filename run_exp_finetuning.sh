@@ -41,7 +41,7 @@ python $PWD/Text-Code/text-to-code/code/run.py \
         --seed=42 \
         --hf_token=$5
 
-mkdir $OUT_DRIVE_DIR/model
-cp -r /content/model/checkpoint-last $OUT_DRIVE_DIR/model
-cp /content/model/* $OUT_DRIVE_DIR/model
-mv $LOGFILE $OUT_DRIVE_DIR/model
+mkdir $OUT_DRIVE_DIR
+cp -r /content/model/checkpoint-last $OUT_DRIVE_DIR
+cp /content/model/* $OUT_DRIVE_DIR
+mv $LOGFILE $OUT_DRIVE_DIR
