@@ -624,7 +624,7 @@ def main():
         args.config_name = os.path.join(checkpoint_last, 'config.json')
         idx_file = os.path.join(checkpoint_last, 'idx_file.txt')
         with open(idx_file, encoding='utf-8') as idxf:
-            args.start_epoch = int(idxf.readlines()[0].strip()) + 1
+            args.start_epoch = int(idxf.readlines()[0].strip())
 
         step_file = os.path.join(checkpoint_last, 'step_file.txt')
         if os.path.exists(step_file):
