@@ -50,10 +50,6 @@ try:
 except:
     from tensorboardX import SummaryWriter
 
-logging.basicConfig(level=logging.INFO,
-                    format=' %(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
 MODEL_CLASSES = {
     'gpt2': (GPT2Config, GPT2LMHeadModel, GPT2Tokenizer),
     'rnn': (GPT2Config, RNNModel, GPT2Tokenizer),
@@ -64,6 +60,7 @@ MODEL_CLASSES = {
     'codegen': (CodeGenConfig, CodeGenForCausalLM, CodeGenTokenizer)
 }
 
+logger = logging.getLogger(__name__)
 
 
 def load_and_cache_examples(args, tokenizer, evaluate=False):
@@ -177,7 +174,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     # model.resize_token_embeddings(len(tokenizer))
     model.zero_grad()
     set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
- 
+    
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         for step, batch in enumerate(train_dataloader):
             if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
@@ -185,9 +182,12 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
             
             inputs, labels = (batch, batch)
             inputs = inputs.to(args.device)
+            
+            attn_mask = (inputs.clone().detach() != tokenizer.pad_token_id).int().to(dtype=torch.uint8, device=args.device)
+            
             labels = labels.to(args.device)
             model.train()
-            outputs = model(inputs, labels=labels)
+            outputs = model(inputs, labels=labels, attention_mask=attn_mask)
             loss = outputs[0]
 
             if args.n_gpu > 1:
@@ -484,6 +484,12 @@ def post_process(args, preds, gts, true_gts, saved_file):
 
 
 def main():
+    fh = logging.FileHandler('logging.txt')
+    logger.addHandler(fh)
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    level=logging.INFO)
+    
     parser = argparse.ArgumentParser()
 
     ## Required parameters
@@ -632,15 +638,9 @@ def main():
     # args.batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
 
     # Setup logging
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        level=logging.INFO if args.local_rank in [-1, 0] else logging.WARN)
     logger.warning("Process rank: %s, device: %s, n_gpu: %s, distributed training: %s, 16-bits training: %s, world size: %s",
                    args.local_rank, device, args.n_gpu, bool(args.local_rank != -1), args.fp16,
                    torch.distributed.get_world_size() if args.local_rank != -1 else 1)
-
-    fh = logging.FileHandler(args.log_file)
-    logger.addHandler(fh)
 
     # Set seed
     set_seed(args)
@@ -670,7 +670,8 @@ def main():
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     pretrained = args.pretrain_dir
     if pretrained:
-        tokenizer = tokenizer_class.from_pretrained(pretrained, do_lower_case=args.do_lower_case, sep_token='<EOL>', bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
+        tokenizer = tokenizer_class.from_pretrained(pretrained,do_lower_case=args.do_lower_case, sep_token='<EOL>', 
+                                                    bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
         #added by akhilesh
         special_tokens_dict = {'sep_token': "<EOL>", "bos_token":'<s>', "eos_token":'</s>', 
                                "pad_token" : '<pad>', "unk_token":"<|UNKNOWN|>"}

@@ -131,7 +131,8 @@ class finetuneDataset(Dataset):
                 else:
                     x = "<s> " + x + " </s>"
                 try:
-                    self.inputs.append(tokenizer.encode(x))
+                    ertoken = tokenizer.encode(x, padding = "max_length", max_length = args.block_size, truncation = True)
+                    self.inputs.append(ertoken)
                 except Exception:
                     pass
                 if idx % (length//10) == 0:
@@ -141,7 +142,7 @@ class finetuneDataset(Dataset):
             gc.collect()
 
             # length = len(input_ids) // world_size
-            # logger.info(f"tokens: {length*world_size}")
+            # print(f"tokens: {length*world_size}", length, len(x))
             # input_ids = input_ids[local_rank*length: (local_rank+1)*length]
 
             # for i in range(0, length-block_size, block_size):
