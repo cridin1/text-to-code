@@ -13,7 +13,7 @@ from rouge import Rouge
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-def edit_distance(hyps,refs):
+def edit_distance(hyps,refs): #hyps -> predizioni machine, refs-> ground truth human
     overall_ED = 0
     num_elem = len(hyps)
     for elem in list(zip(hyps,refs)):
@@ -57,9 +57,9 @@ def evaluate_metrics(predictions, answers):
     list_gold = gts
     list_answer = preds
 
-    overall_ED = edit_distance(list_gold, list_answer)
-    overall_Meteor = meteor(list_gold, list_answer)
-    overall_Rouge = rouge(list_gold, list_answer)
+    overall_ED = edit_distance(list_answer, list_gold)
+    overall_Meteor = meteor(list_answer, list_gold)
+    overall_Rouge = rouge(list_answer, list_gold)
     num_elem = len(list_answer)
 
     print(f"ED: {overall_ED}")
@@ -71,11 +71,11 @@ def evaluate_metrics(predictions, answers):
 
     EM = round(EM/total*100, 2)
     ROUGEL = overall_Rouge[-1]
-    BLEU4 = bleus[-1]
-    METEOR = round(overall_Meteor,2)
+    BLEU = bleus
+    METEOR = round(overall_Meteor*100,2) 
     ED = round(overall_ED,2)
 
-    return EM, BLEU4, ED, METEOR, ROUGEL
+    return EM, BLEU, ED, METEOR, ROUGEL
 
 def main():
     parser = argparse.ArgumentParser(description='Evaluate leaderboard predictions for code completion (line level).')

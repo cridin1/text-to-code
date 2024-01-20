@@ -177,14 +177,15 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         for step, batch in enumerate(train_dataloader):
-            if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
+            if((args.start_step != 0) or (args.start_epoch != 0)):
+              if(idx == args.start_epoch) and (step <= args.start_step): # if i'm resuming from the start epoch and from global step
                 continue
             
             inputs, labels = (batch, batch)
             inputs = inputs.to(args.device)
-            
+
             attn_mask = (inputs.clone().detach() != tokenizer.pad_token_id).int().to(dtype=torch.uint8, device=args.device)
-            
+
             labels = labels.to(args.device)
             model.train()
             outputs = model(inputs, labels=labels, attention_mask=attn_mask)
@@ -719,6 +720,8 @@ def main():
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
         if(args.hf_token != ""):
+            shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
+
             os.environ['HF_TOKEN']= args.hf_token
             output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
             api = HfApi()

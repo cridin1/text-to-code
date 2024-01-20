@@ -154,7 +154,7 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     # Train!
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", total_examples )
-    logger.info("  Num epoch = %d", t_total*batch_size//total_examples)
+    logger.info("  Num epoch = %d", args.num_train_epochs)
     logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
     logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d", batch_size)
     logger.info("  Gradient Accumulation steps = %d", args.gradient_accumulation_steps)
@@ -170,11 +170,14 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
  
     for idx in range(args.start_epoch, int(args.num_train_epochs)): 
         for step, (batch, token_labels) in enumerate(train_dataloader):
-            if(idx == args.start_epoch) and (step <= global_step): # if i'm resuming from the start epoch and from global step
+            if((args.start_step != 0) or (args.start_epoch != 0)):
+              if(idx == args.start_epoch) and (step <= args.start_step): # if i'm resuming from the start epoch and from global step
                 continue
+              
             inputs = batch.to(args.device)
-            attn_mask = torch.tensor(token_labels.clone().detach() != 0, dtype=torch.uint8, device=args.device)
-            loss_mask = torch.tensor(token_labels.clone().detach() == 2, dtype=torch.uint8, device=args.device)
+            attn_mask = (token_labels.clone().detach() != 0).int().to(dtype=torch.uint8, device=args.device)
+            loss_mask = (token_labels.clone().detach() == 2).int().to(dtype=torch.uint8, device=args.device)
+
             model.train()
             # outputs = model(inputs, attention_mask=attn_mask, labels=inputs, loss_mask=loss_mask)
             # loss = outputs[0]
@@ -231,11 +234,18 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
                         #    tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                         #    logger.info("  %s = %s", key, round(value,4))
                         #output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(results['perplexity'],4)))
-                        logger.info(f"\n ==iteration: {global_step}/{t_total}")
-                        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
-                        output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu,2)))
-                        if dev_bleu > best_bleu:
-                            best_bleu = dev_bleu
+                        logger.info(f"\n iteration: {global_step}/{t_total}")
+                        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=150)
+
+                        tb_writer.add_scalar('EM', dev_EM, global_step)
+                        tb_writer.add_scalar('BLEU4', dev_bleu[-1], global_step)
+                        tb_writer.add_scalar('ED', ED, global_step)
+                        tb_writer.add_scalar('METEOR', METEOR, global_step)
+                        tb_writer.add_scalar('ROUGEL', ROUGEL, global_step)
+
+                        output_dir = os.path.join(args.output_dir, '{}-{}-{}'.format(checkpoint_prefix, global_step, round(dev_bleu[-1],2)))
+                        if dev_bleu[-1] > best_bleu:
+                            best_bleu = dev_bleu[-1]
                             logger.info(f"best bleu updated. saved in {output_dir}")
                             logger.info(f"best bleu: {best_bleu}")
                     else:
@@ -443,9 +453,9 @@ def eval_bleu(args, model, tokenizer, file_type='test', num=2000):
 
 
 
-    EM, BLEU4, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.gold"), os.path.join(args.output_dir, f"{file_type}.output"))
-    logger.info(f"EM: {EM}, BLEU4: {BLEU4}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} ==\n")
-    return BLEU4, EM
+    EM, BLEU, ED, METEOR, ROUGEL = evaluate_metrics(os.path.join(args.output_dir, f"{file_type}.output"), os.path.join(args.output_dir, f"{file_type}.gold"))
+    logger.info(f"EM: {EM}, BLEU: {BLEU}, ED: {ED}, METEOR: {METEOR}, ROUGEL: {ROUGEL} \n")
+    return EM, BLEU, ED, METEOR, ROUGEL
 
 
 
@@ -614,7 +624,7 @@ def main():
         args.config_name = os.path.join(checkpoint_last, 'config.json')
         idx_file = os.path.join(checkpoint_last, 'idx_file.txt')
         with open(idx_file, encoding='utf-8') as idxf:
-            args.start_epoch = int(idxf.readlines()[0].strip()) + 1
+            args.start_epoch = int(idxf.readlines()[0].strip())
 
         step_file = os.path.join(checkpoint_last, 'step_file.txt')
         if os.path.exists(step_file):
@@ -627,14 +637,14 @@ def main():
     config_class, model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
     pretrained = args.pretrain_dir
     if pretrained:
-        tokenizer = tokenizer_class.from_pretrained(pretrained, do_lower_case=args.do_lower_case, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>', sep_token='concode_elem_sep')
+        tokenizer = tokenizer_class.from_pretrained(pretrained, do_lower_case=args.do_lower_case, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
         logger.info(tokenizer.encode("<s> hello world <pad> </s>"))
         model = model_class.from_pretrained(pretrained)
         model.resize_token_embeddings(len(tokenizer))
         update_config(model, tokenizer)
         logger.info(model.config)
     else:
-        tokenizer = tokenizer_class.from_pretrained(args.tokenizer_dir, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>', sep_token='concode_elem_sep')
+        tokenizer = tokenizer_class.from_pretrained(args.tokenizer_dir, bos_token='<s>', eos_token='</s>', pad_token='<pad>', unk_token='<|UNKNOWN|>')
         args.vocab_size = tokenizer.vocab_size
         config = config_class.from_pretrained(args.config_dir)
         model = model_class(config)
@@ -657,29 +667,39 @@ def main():
         global_step, tr_loss = train(args, train_dataset, model, tokenizer, fh, pool)
         logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
-        logger.info("Pushing the model on hf, requires token as env var")
-        
-        if(args.hf_token != ""):
-            os.environ['HF_TOKEN']= args.hf_token
-            output_path = os.path.join("cridin1", os.path.split(model.config._name_or_path)[-1]) + "-" + str(int(args.num_train_epochs)) +"-powershell"
-            api = HfApi()
-
-            if not(api.repo_exists(output_path)):
-                api.create_repo(output_path, private=True)
-
-            api.upload_folder(
-                folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
-                repo_id=output_path,
-                repo_type="model",
-            )
-
     if args.do_eval:            # only works on 1 GPU
-        dev_bleu, dev_EM = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
-        logger.info(f"dev bleu: {dev_bleu}, dev EM: {dev_EM}")
+        dev_EM, dev_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='dev', num=2000)
+        logger.info(f"dev bleu: {dev_bleu[-1]}, dev EM: {dev_EM}")
 
     if args.do_infer:            # only works on 1 GPU
-        test_bleu, test_EM = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
-        logger.info(f"test bleu: {test_bleu}, test EM: {test_EM}")
+        test_EM, test_bleu, ED, METEOR, ROUGEL = eval_bleu(args, model, tokenizer, file_type='test', num=2000)
+        logger.info(f"test bleu: {test_bleu[-1]}, test EM: {test_EM}")
+
+    if(args.hf_token != ""):
+        logger.info("Pushing the model on hf")
+
+        if(not(os.path.exists(os.path.join(args.output_dir, 'checkpoint-last','tensorboard')))):
+            shutil.copytree(os.path.join(args.output_dir, 'tensorboard'),os.path.join(args.output_dir, 'checkpoint-last','tensorboard'))
+
+        if(not(os.path.exists(os.path.join(args.output_dir, 'checkpoint-last',args.log_file)))):
+            shutil.copy2(args.log_file,os.path.join(args.output_dir, 'checkpoint-last'))
+
+        os.environ['HF_TOKEN']= args.hf_token
+        pretrained = "-pretrained" if os.path.split(model.config._name_or_path)[0] == "cridin1" else ""
+        output_path = f"{os.path.join('cridin1', os.path.split(model.config._name_or_path)[-1])}-{str(int(args.num_train_epochs))}-{str(int(args.gradient_accumulation_steps))}-powershell{pretrained}-last"
+        
+        logger.info(f"Pushing the model on hf: {output_path}")
+
+        api = HfApi()
+
+        if not(api.repo_exists(output_path)):
+            api.create_repo(output_path, private=True)
+
+        api.upload_folder(
+            folder_path=os.path.join(args.output_dir, 'checkpoint-last'),
+            repo_id=output_path,
+            repo_type="model",
+        )
 
 
 if __name__ == "__main__":
