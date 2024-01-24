@@ -129,9 +129,14 @@ def train(args, train_dataset, model, tokenizer, fh, pool):
     scheduler_last = os.path.join(checkpoint_last, 'scheduler.pt')
     optimizer_last = os.path.join(checkpoint_last, 'optimizer.pt')
     if os.path.exists(scheduler_last):
-        scheduler.load_state_dict(torch.load(scheduler_last, map_location="cpu"))
+        scheduler.load_state_dict(torch.load(scheduler_last))
     if os.path.exists(optimizer_last):
-        optimizer.load_state_dict(torch.load(optimizer_last, map_location="cpu"))   
+        optimizer.load_state_dict(torch.load(optimizer_last))   
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(args.device)
+    
     if args.local_rank == 0:
         torch.distributed.barrier()   
     if args.fp16:
