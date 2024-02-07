@@ -30,7 +30,7 @@ def meteor(hyps, refs):
 def rouge(hyps, refs):
 	metrics = ["rouge-1","rouge-2","rouge-3","rouge-4","rouge-l"]
 	rouge = Rouge(metrics=metrics)
-	scores = rouge.get_scores(hyps, refs, avg=True)
+	scores = rouge.get_scores(hyps, refs, avg=True,ignore_empty=True)
 	f1_scores = [scores["rouge-1"]["f"], scores["rouge-2"]["f"], scores["rouge-3"]["f"], scores["rouge-4"]["f"], scores["rouge-l"]["f"]]
 	return f1_scores
 
